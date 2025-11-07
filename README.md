@@ -1,0 +1,106 @@
+# Gemini File Search (RAG) – Python Demo
+
+Google released a **fully managed RAG system** built directly into the Gemini API (Nov 6, 2024).
+
+No vector DB. No embedding costs. No chunking code. Just upload files → ask questions with perfect citations.
+
+## What is this?
+
+A minimal Python demo showing Google's new File Search capability for Gemini. This RAG system is:
+- **Fully managed** – no infrastructure to maintain
+- **Free storage and embeddings** – you only pay for Gemini tokens
+- **Built-in citations** – answers include source references
+- **Simple API** – ~50 lines of code to get started
+
+## Features
+
+This demo shows how to:
+- ✅ Create a persistent File Search Store
+- ✅ Upload multiple PDFs concurrently with metadata
+- ✅ Ask questions and get grounded answers with inline citations
+- ✅ Search the index directly (without generation)
+- ✅ Delete and cleanup resources
+
+## Setup
+
+1. **Get your API key**: https://aistudio.google.com/app/apikey
+
+2. **Enable the Generative Language API**:
+   ```bash
+   # Option 1 (Fastest - CLI):
+   gcloud services enable generativelanguage.googleapis.com
+   
+   # Option 2 (Web Console):
+   # Visit: https://console.developers.google.com/apis/api/generativelanguage.googleapis.com
+   # Click 'Enable API'
+   ```
+
+3. **Set up your environment**:
+   ```bash
+   # Copy the example env file
+   cp .env.example .env
+   # Edit .env and add your API key: GEMINI_API_KEY=your-actual-key
+   ```
+
+4. **Install dependencies** (with uv - recommended):
+   ```bash
+   # Install uv if you don't have it
+   brew install uv  # or: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Create venv and install dependencies (fast!)
+   uv venv
+   source .venv/bin/activate
+   uv pip install -r requirements.txt
+   ```
+
+   <details>
+   <summary>Or use traditional pip (slower)</summary>
+
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+   </details>
+
+5. **Run the demo**:
+   ```bash
+   python3 gemini-rag-zero.py
+   ```
+
+**Note**: The script requires sample PDF files in a `samples/` directory. You'll need to add your own documents or update the file paths in the script.
+
+## Pricing
+
+- **Storage**: FREE
+- **Embeddings at query time**: FREE
+- **Gemini tokens**: Standard pricing (input/output tokens only)
+
+## How RAG Works
+
+**RAG** = Retrieval-Augmented Generation
+
+Traditional AI models only know what they learned during training. With RAG, you provide your own documents and the system:
+
+1. Automatically chunks and embeds your files
+2. Stores them in a searchable vector index
+3. Finds relevant content when you ask questions
+4. Grounds answers in your actual data (reduces hallucinations)
+
+**What Google eliminated**: Before this, you needed to manually parse files, manage chunking strategies, generate embeddings, run vector databases (Pinecone, Weaviate, etc.), and write retrieval code. Now it's all handled by the API.
+
+## Learn More
+
+- 📝 [Phil's JavaScript Tutorial](https://www.philschmid.de/gemini-file-search-javascript) – Comprehensive hands-on guide
+- 📢 [Google's Official Announcement](https://blog.google/technology/developers/file-search-gemini-api/)
+- 📚 [Official Documentation](https://ai.google.dev/gemini-api/docs/file-search)
+
+## Why This Matters
+
+Google's File Search competes directly with OpenAI's Assistants API file search, but with:
+- Simpler implementation
+- Often lower costs (free storage + embeddings)
+- Works with Gemini 2.5 Pro/Flash (huge context windows)
+- Production-ready for enterprise use
+
+Perfect for building AI assistants that need to answer questions about your documents, contracts, reports, knowledge bases, etc.
