@@ -76,10 +76,20 @@ This demo shows how to:
 
 **Note**: The script requires sample PDF files in a `samples/` directory. You'll need to add your own documents or update the file paths in the script.
 
-## Pricing
+## Limits & Pricing
 
+**File Size Limits:**
+- Maximum file size: **100 MB per document**
+- Recommended file search store size: **Under 20 GB** (for optimal retrieval speed)
+
+**Storage Limits (Free Tier):**
+- Total storage: **1 GB** (includes input data + embeddings, typically ~3x your input size)
+- Paid tiers available: 10 GB (Tier 1), 100 GB (Tier 2), 1 TB (Tier 3)
+
+**Pricing:**
 - **Storage**: FREE
 - **Embeddings at query time**: FREE
+- **Indexing embeddings**: $0.15 per 1M tokens (one-time at upload)
 - **Gemini tokens**: Standard pricing (input/output tokens only)
 
 ## How RAG Works

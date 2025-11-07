@@ -63,6 +63,12 @@ def main():
     print("   Note: This demo expects PDF files in the 'samples/' directory.")
     print("   Add your own PDFs there, or modify the file paths below.")
     
+    # FILE SIZE LIMITS:
+    # - Maximum: 100 MB per document
+    # - Free tier total storage: 1 GB (includes input + embeddings, typically ~3x your input size)
+    # - Recommended store size: Under 20 GB for optimal retrieval speed
+    # - Indexing cost: $0.15 per 1M tokens (one-time at upload)
+    
     # Upload files from the samples directory
     sample_files = [
         "samples/sample1.pdf",
