@@ -3,16 +3,18 @@
 Gemini File Search Store Management Utility
 
 Usage:
-    python3 manage-store.py list                    # List all stores
-    python3 manage-store.py list <store-name>       # List documents in a store
-    python3 manage-store.py delete <store-name>     # Delete entire store
-    python3 manage-store.py remove <doc-id>         # Remove a document from store
+    python3 manage-store.py list                              # List all stores
+    python3 manage-store.py list <store-name>                 # List documents in a store
+    python3 manage-store.py delete <store-name>               # Delete entire store
+    python3 manage-store.py remove <doc-id>                   # Remove a document
+    python3 manage-store.py query <store-name> "question"     # Query a store
 """
 
 import os
 import sys
 from dotenv import load_dotenv
 from google import genai
+from google.genai import types
 
 load_dotenv()
 
@@ -34,6 +36,13 @@ def list_stores():
         print(f"{i}. {store.display_name}")
         print(f"   Name: {store.name}")
         print(f"   Created: {store.create_time}")
+        
+        # Show document count
+        try:
+            docs = list(client.file_search_stores.list_documents(file_search_store_name=store.name))
+            print(f"   Documents: {len(docs)}")
+        except:
+            pass
         print()
     
     return stores
@@ -100,24 +109,93 @@ def remove_document(doc_id):
     except Exception as e:
         print(f"   ❌ Error removing document: {e}")
 
+def query_store(store_name, question, model="gemini-2.5-flash"):
+    """Query a File Search Store with a question"""
+    print(f"🔍 Querying store: {store_name}\n")
+    print(f"Q: {question}\n")
+    
+    try:
+        response = client.models.generate_content(
+            model=model,
+            contents=question,
+            config=types.GenerateContentConfig(
+                tools=[
+                    types.Tool(
+                        file_search=types.FileSearch(
+                            file_search_store_names=[store_name]
+                        )
+                    )
+                ]
+            )
+        )
+        
+        print(f"A: {response.text}\n")
+        
+        # Show citations if available
+        if response.candidates[0].grounding_metadata:
+            print("📌 Sources:")
+            for chunk in response.candidates[0].grounding_metadata.grounding_chunks:
+                if hasattr(chunk, 'file_search'):
+                    doc = chunk.file_search.document
+                    print(f"   • {doc.display_name}")
+                    if hasattr(chunk.file_search, 'page_range'):
+                        pages = chunk.file_search.page_range
+                        print(f"     Pages: {pages.start_page_index}-{pages.end_page_index}")
+        else:
+            print("(No sources cited)")
+            
+    except Exception as e:
+        print(f"❌ Error querying store: {e}")
+
+def interactive_query(store_name):
+    """Interactive query mode - ask multiple questions"""
+    print(f"\n✅ Querying store: {store_name}\n")
+    print("Enter questions (or 'quit' to exit)\n")
+    
+    while True:
+        print("Question: ", end='')
+        question = input().strip()
+        
+        if question.lower() in ['quit', 'exit', 'q']:
+            break
+        
+        if question:
+            print()
+            query_store(store_name, question)
+            print()
+
 def show_usage():
     """Show usage information"""
     print("""
 🔧 Gemini File Search Store Manager
 
 Usage:
-    python3 manage-store.py list                    # List all stores
-    python3 manage-store.py list <store-name>       # List documents in a store
-    python3 manage-store.py delete <store-name>     # Delete entire store
-    python3 manage-store.py remove <doc-id>         # Remove a document
+    python3 manage-store.py list                            # List all stores
+    python3 manage-store.py list <store-name>               # List documents in a store
+    python3 manage-store.py delete <store-name>             # Delete entire store
+    python3 manage-store.py remove <doc-id>                 # Remove a document
+    python3 manage-store.py query <store-name> "question"   # Query a store
 
 Examples:
+    # List all stores
     python3 manage-store.py list
+    
+    # View documents in a store
     python3 manage-store.py list fileSearchStores/abc123
+    
+    # Query a store
+    python3 manage-store.py query fileSearchStores/abc123 "What are the key findings?"
+    
+    # Delete a store
     python3 manage-store.py delete fileSearchStores/abc123
+    
+    # Remove a specific document
     python3 manage-store.py remove fileSearchStores/abc123/documents/xyz789
 
-Note: Run 'python3 manage-store.py list' first to get store and document IDs.
+Interactive Mode:
+    python3 manage-store.py                                 # Browse stores
+    
+Note: Store IDs are shown when you run 'list' command.
 """)
 
 def main():
@@ -164,6 +242,20 @@ def main():
         else:
             print("❌ Error: Missing document ID")
             print("Usage: python3 manage-store.py remove <document-id>")
+    
+    elif command == 'query':
+        if len(sys.argv) == 3:
+            # Interactive query mode
+            store_name = sys.argv[2]
+            interactive_query(store_name)
+        elif len(sys.argv) == 4:
+            # Single question mode
+            store_name = sys.argv[2]
+            question = sys.argv[3]
+            query_store(store_name, question)
+        else:
+            print("❌ Error: Missing arguments")
+            print("Usage: python3 manage-store.py query <store-name> [\"question\"]")
     
     elif command in ['help', '-h', '--help']:
         show_usage()
