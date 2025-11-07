@@ -78,61 +78,61 @@ This demo shows how to:
 
 ## Managing & Querying Your Stores
 
-Use the comprehensive **`manage-store.py`** utility for all operations:
+Use the comprehensive **`manage-filestore.py`** utility for all operations:
 
 ### 📊 View & Analyze
 
 ```bash
 # List all stores
-python3 manage-store.py list
+python3 manage-filestore.py list
 
 # List documents in a specific store
-python3 manage-store.py list fileSearchStores/abc123
+python3 manage-filestore.py list fileSearchStores/abc123
 
 # Show global storage statistics
-python3 manage-store.py stats
+python3 manage-filestore.py stats
 
 # Show stats for a specific store
-python3 manage-store.py stats fileSearchStores/abc123
+python3 manage-filestore.py stats fileSearchStores/abc123
 ```
 
 ### 🎯 Query & Search
 
 ```bash
 # Query with RAG (returns answers with citations)
-python3 manage-store.py query fileSearchStores/abc123 "What are the main topics?"
+python3 manage-filestore.py query fileSearchStores/abc123 "What are the main topics?"
 
 # Interactive query mode - ask multiple questions
-python3 manage-store.py query fileSearchStores/abc123
+python3 manage-filestore.py query fileSearchStores/abc123
 
 # Fast vector search (find matching documents)
-python3 manage-store.py search fileSearchStores/abc123 "revenue forecast"
+python3 manage-filestore.py search fileSearchStores/abc123 "revenue forecast"
 ```
 
 ### 📤 Upload & Modify
 
 ```bash
 # Upload new files to existing store
-python3 manage-store.py upload fileSearchStores/abc123 doc1.pdf doc2.pdf
+python3 manage-filestore.py upload fileSearchStores/abc123 doc1.pdf doc2.pdf
 
 # Rename a store
-python3 manage-store.py rename fileSearchStores/abc123 "Q4 Documents"
+python3 manage-filestore.py rename fileSearchStores/abc123 "Q4 Documents"
 ```
 
 ### 💾 Export & Delete
 
 ```bash
 # Export all stores to JSON (for backup/documentation)
-python3 manage-store.py export > backup.json
+python3 manage-filestore.py export > backup.json
 
 # Export specific store with documents
-python3 manage-store.py export fileSearchStores/abc123
+python3 manage-filestore.py export fileSearchStores/abc123
 
 # Delete entire store (with confirmation)
-python3 manage-store.py delete fileSearchStores/abc123
+python3 manage-filestore.py delete fileSearchStores/abc123
 
 # Remove a specific document (with confirmation)
-python3 manage-store.py remove fileSearchStores/abc123/documents/xyz789
+python3 manage-filestore.py remove fileSearchStores/abc123/documents/xyz789
 ```
 
 ### Complete Feature Set
