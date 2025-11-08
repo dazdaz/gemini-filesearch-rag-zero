@@ -35,9 +35,9 @@ Examples:
   # Use defaults (samples/ directory, Flash model, default questions)
   python3 gemini-rag-zero.py
   
-  # Use Pro model for better reasoning
-  python3 gemini-rag-zero.py --model gemini-2.5-pro
-  python3 gemini-rag-zero.py -m gemini-2.5-pro
+  # Use Pro model with custom query
+  python3 gemini-rag-zero.py --model gemini-2.5-pro -q "Summarize in detail"
+  python3 gemini-rag-zero.py -m gemini-2.5-pro -q "Summarize in detail"
   
   # Upload specific files
   python3 gemini-rag-zero.py --files doc1.pdf doc2.pdf doc3.pdf
