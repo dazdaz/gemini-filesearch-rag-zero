@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import time
+import argparse
 import warnings
 from dotenv import load_dotenv
 from google import genai
@@ -24,7 +26,32 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 def main():
-    print("🚀 Creating File Search Store in Gemini...")
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(
+        description='Gemini RAG Demo - Create and query a File Search Store',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Use default model (gemini-2.5-flash)
+  python3 gemini-rag-zero.py
+  
+  # Use Pro model for better reasoning
+  python3 gemini-rag-zero.py --model gemini-2.5-pro
+  python3 gemini-rag-zero.py -m gemini-2.5-pro
+        """
+    )
+    parser.add_argument(
+        '-m', '--model',
+        choices=['gemini-2.5-flash', 'gemini-2.5-pro'],
+        default='gemini-2.5-flash',
+        help='Gemini model to use for queries (default: gemini-2.5-flash)'
+    )
+    args = parser.parse_args()
+    
+    model_name = args.model
+    model_display = "Flash (fast & cost-effective)" if model_name == "gemini-2.5-flash" else "Pro (most capable)"
+    
+    print(f"🚀 Creating File Search Store in Gemini using {model_name} ({model_display})...")
     try:
         file_search_store = client.file_search_stores.create(
             config={'display_name': 'Company Knowledge Base - Demo'}
@@ -122,7 +149,7 @@ def main():
     for q in questions:
         print(f"\nQ: {q}")
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model=model_name,
             contents=q,
             config=types.GenerateContentConfig(
                 tools=[
@@ -146,7 +173,7 @@ def main():
     print("\n🧹 Cleaning up...")
     # NOTE: Comment out the line below to keep your File Search Store persistent
     # The store and indexed data will remain in Gemini's cloud until you manually delete it
-    client.file_search_stores.delete(name=file_search_store.name, config={'force': True})
+#    client.file_search_stores.delete(name=file_search_store.name, config={'force': True})
     print("   Store deleted. All done! 🎉")
 
 if __name__ == "__main__":
