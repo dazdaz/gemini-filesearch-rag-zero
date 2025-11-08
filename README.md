@@ -74,7 +74,37 @@ This demo shows how to:
    python3 gemini-rag-zero.py
    ```
 
-**Note**: The script requires sample PDF files in a `samples/` directory. You'll need to add your own documents or update the file paths in the script.
+## Command-Line Options
+
+The demo script supports flexible command-line options:
+
+```bash
+# Use defaults (samples/ directory, Flash model, default questions)
+python3 gemini-rag-zero.py
+
+# Choose model: Flash (fast) or Pro (most capable)
+python3 gemini-rag-zero.py -m gemini-2.5-pro -q "Summarize in detail"
+
+# Upload specific files
+python3 gemini-rag-zero.py -f doc1.pdf doc2.pdf doc3.pdf
+
+# Upload all PDFs from a directory
+python3 gemini-rag-zero.py -f /path/to/documents/
+
+# Ask a custom question
+python3 gemini-rag-zero.py -q "What are the main conclusions?"
+
+# Combine all options
+python3 gemini-rag-zero.py -m gemini-2.5-pro -f mydocs/ -q "Summarize"
+
+# See all options
+python3 gemini-rag-zero.py --help
+```
+
+**Available Options:**
+- `-m, --model` - Choose model: `gemini-2.5-flash` (default) or `gemini-2.5-pro`
+- `-q, --query` - Ask a specific question instead of default questions
+- `-f, --files` - Upload custom PDF files or directory (default: `samples/`)
 
 ## How It Works: Automatic RAG Indexing
 
