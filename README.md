@@ -76,6 +76,34 @@ This demo shows how to:
 
 **Note**: The script requires sample PDF files in a `samples/` directory. You'll need to add your own documents or update the file paths in the script.
 
+## How It Works: Automatic RAG Indexing
+
+**Everything is automatic!** When you upload a file to a File Search Store:
+
+1. ✅ **Upload** → File is sent to Google Cloud
+2. ✅ **Chunking** → Automatically split into chunks (500 tokens by default)
+3. ✅ **Embedding** → Each chunk is embedded (FREE - no cost!)
+4. ✅ **Indexing** → Vectors stored in managed vector database (FREE - no cost!)
+5. ✅ **Ready** → Immediately queryable (no waiting!)
+
+**You don't need to:**
+- ❌ Manually chunk documents
+- ❌ Generate embeddings yourself
+- ❌ Manage a vector database
+- ❌ Trigger indexing
+- ❌ Rebuild indexes
+
+**When you upload a file, it's instantly indexed and ready to query.** The entire RAG pipeline is fully managed by Google—just upload and start asking questions!
+
+**What you do pay for:**
+- 💰 Indexing embeddings: $0.15 per 1M tokens (one-time at upload)
+- 💰 Query tokens: Standard Gemini pricing
+
+**What's FREE:**
+- 🆓 Storage (up to 1 GB)
+- 🆓 Query-time embeddings
+- 🆓 Vector database management
+
 ## Managing & Querying Your Stores
 
 Use the comprehensive **`manage-filestore.py`** utility for all operations:
