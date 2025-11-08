@@ -5,11 +5,14 @@ Gemini File Search Store Management Utility
 Usage:
     python3 manage-store.py list                              # List all stores
     python3 manage-store.py list <store-name>                 # List documents in a store
+    python3 manage-store.py info <store-name>                 # Show detailed store info
     python3 manage-store.py stats                             # Show storage statistics
     python3 manage-store.py stats <store-name>                # Show stats for specific store
     python3 manage-store.py query <store-name> "question"     # Query a store
     python3 manage-store.py search <store-name> "query"       # Vector search (no generation)
     python3 manage-store.py upload <store-name> <file>...     # Upload files to store
+    python3 manage-store.py import <store-name> <file-id>...  # Import files from File API
+    python3 manage-store.py operation <operation-id>          # Check operation status
     python3 manage-store.py rename <store-name> "new name"    # Rename a store
     python3 manage-store.py export [store-name]               # Export store info
     python3 manage-store.py delete <store-name>               # Delete entire store
@@ -366,6 +369,195 @@ def interactive_query(store_name):
             query_store(store_name, question)
             print()
 
+def get_store_info(store_name):
+    """Get detailed information about a specific File Search Store"""
+    print(f"ℹ️  File Search Store Information\n")
+    
+    try:
+        store = client.file_search_stores.get(name=store_name)
+        
+        print(f"Name: {store.name}")
+        print(f"Display Name: {store.display_name}")
+        print(f"Created: {store.create_time}")
+        print(f"Updated: {store.update_time}")
+        print(f"\n📊 Document Statistics:")
+        print(f"   Active Documents: {store.active_documents_count}")
+        print(f"   Pending Documents: {store.pending_documents_count}")
+        print(f"   Failed Documents: {store.failed_documents_count}")
+        
+        size_mb = int(store.size_bytes) / (1024 * 1024) if store.size_bytes else 0
+        print(f"\n💾 Storage:")
+        print(f"   Raw Size: {size_mb:.2f} MB")
+        print(f"   Estimated with Embeddings: ~{size_mb * 3:.2f} MB")
+        
+        if int(store.failed_documents_count) > 0:
+            print(f"\n⚠️  Warning: {store.failed_documents_count} document(s) failed processing")
+        
+    except Exception as e:
+        print(f"❌ Error getting store info: {e}")
+
+def import_files(store_name, file_ids, custom_metadata=None):
+    """Import files from File API to a File Search Store"""
+    print(f"📥 Importing files to store: {store_name}\n")
+    
+    imported = 0
+    for file_id in file_ids:
+        try:
+            print(f"   Importing {file_id}...")
+            
+            config = {}
+            if custom_metadata:
+                config['custom_metadata'] = custom_metadata
+            
+            operation = client.file_search_stores.import_file(
+                file_search_store_name=store_name,
+                file_name=file_id,
+                config=config
+            )
+            
+            # Wait for import to complete
+            while not operation.done:
+                time.sleep(2)
+                operation = client.operations.get(operation)
+            
+            if hasattr(operation, 'error') and operation.error:
+                print(f"   ❌ Failed: {operation.error}")
+            else:
+                print(f"   ✅ Imported successfully")
+                imported += 1
+            
+        except Exception as e:
+            print(f"   ❌ Error importing {file_id}: {e}")
+    
+    print(f"\n✅ Imported {imported}/{len(file_ids)} files")
+
+def check_operation(operation_id):
+    """Check the status of a long-running operation"""
+    print(f"🔄 Operation Status\n")
+    
+    try:
+        operation = client.operations.get(name=operation_id)
+        
+        print(f"Operation: {operation.name}")
+        print(f"Done: {operation.done}")
+        
+        if operation.metadata:
+            print(f"\nMetadata:")
+            for key, value in operation.metadata.items():
+                print(f"   {key}: {value}")
+        
+        if operation.done:
+            if hasattr(operation, 'error') and operation.error:
+                print(f"\n❌ Error: {operation.error}")
+            elif hasattr(operation, 'response') and operation.response:
+                print(f"\n✅ Success!")
+                if operation.response:
+                    print(f"Response:")
+                    for key, value in operation.response.items():
+                        print(f"   {key}: {value}")
+        else:
+            print(f"\n⏳ Operation in progress...")
+            
+    except Exception as e:
+        print(f"❌ Error checking operation: {e}")
+
+def list_stores_paginated(page_size=10):
+    """List all File Search Stores with pagination"""
+    print("📚 Your File Search Stores:\n")
+    
+    page_token = None
+    page_num = 1
+    total_stores = 0
+    
+    while True:
+        try:
+            if page_token:
+                result = client.file_search_stores.list(page_size=page_size, page_token=page_token)
+            else:
+                result = client.file_search_stores.list(page_size=page_size)
+            
+            stores = list(result.file_search_stores) if hasattr(result, 'file_search_stores') else []
+            
+            if not stores and page_num == 1:
+                print("   No stores found.")
+                return
+            
+            print(f"Page {page_num}:")
+            for i, store in enumerate(stores, 1 + total_stores):
+                print(f"{i}. {store.display_name}")
+                print(f"   Name: {store.name}")
+                print(f"   Created: {store.create_time}")
+                print(f"   Active Documents: {store.active_documents_count}")
+                print()
+            
+            total_stores += len(stores)
+            
+            # Check if there are more pages
+            if hasattr(result, 'next_page_token') and result.next_page_token:
+                page_token = result.next_page_token
+                page_num += 1
+                
+                response = input(f"\nShow next page? (y/n): ")
+                if response.lower() != 'y':
+                    break
+            else:
+                break
+                
+        except Exception as e:
+            print(f"❌ Error listing stores: {e}")
+            break
+    
+    print(f"\nTotal stores: {total_stores}")
+
+def upload_with_metadata(store_name, file_paths, custom_metadata=None):
+    """Upload files with custom metadata"""
+    print(f"📤 Uploading files to store: {store_name}\n")
+    
+    if custom_metadata:
+        print(f"Custom metadata: {custom_metadata}\n")
+    
+    uploaded = 0
+    for file_path in file_paths:
+        if not os.path.exists(file_path):
+            print(f"   ⚠️  File not found: {file_path}")
+            continue
+        
+        try:
+            print(f"   Uploading {file_path}...")
+            
+            config = {
+                'display_name': os.path.basename(file_path),
+                'chunking_config': {
+                    'white_space_config': {
+                        'max_tokens_per_chunk': 500,
+                        'max_overlap_tokens': 50
+                    }
+                }
+            }
+            
+            if custom_metadata:
+                config['custom_metadata'] = custom_metadata
+            
+            operation = client.file_search_stores.upload_to_file_search_store(
+                file=file_path,
+                parent=store_name,
+                config=config
+            )
+            
+            # Show progress
+            print(f"   ⏳ Processing...")
+            while not operation.done:
+                time.sleep(2)
+                operation = client.operations.get(operation)
+            
+            print(f"   ✅ Uploaded successfully")
+            uploaded += 1
+            
+        except Exception as e:
+            print(f"   ❌ Error uploading {file_path}: {e}")
+    
+    print(f"\n✅ Uploaded {uploaded}/{len(file_paths)} files")
+
 def show_usage():
     """Show usage information"""
     print("""
@@ -374,23 +566,40 @@ def show_usage():
 Usage:
     python3 manage-store.py list                            # List all stores
     python3 manage-store.py list <store-name>               # List documents in a store
+    python3 manage-store.py info <store-name>               # Show detailed store info
     python3 manage-store.py stats                           # Show global storage stats
     python3 manage-store.py stats <store-name>              # Show stats for specific store
     python3 manage-store.py query <store-name> "question"   # Query a store
     python3 manage-store.py search <store-name> "query"     # Vector search (fast)
     python3 manage-store.py upload <store-name> <files>...  # Upload files to store
+    python3 manage-store.py import <store-name> <file-ids>  # Import from File API
+    python3 manage-store.py operation <operation-id>        # Check operation status
     python3 manage-store.py rename <store-name> "new name"  # Rename store
     python3 manage-store.py export                          # Export all stores to JSON
     python3 manage-store.py export <store-name>             # Export specific store
     python3 manage-store.py delete <store-name>             # Delete entire store
     python3 manage-store.py remove <doc-id>                 # Remove a document
 
+New Features:
+    info      - Get detailed metadata (active/pending/failed docs, storage size)
+    import    - Import files already uploaded to File API (reuse across stores)
+    operation - Check status of long-running operations (uploads, imports)
+
 Examples:
+    # View detailed store info with metadata
+    python3 manage-store.py info fileSearchStores/abc123
+    
     # View storage usage
     python3 manage-store.py stats
     
     # Upload new documents
     python3 manage-store.py upload fileSearchStores/abc123 doc1.pdf doc2.pdf
+    
+    # Import already-uploaded files from File API
+    python3 manage-store.py import fileSearchStores/abc123 files/xyz789
+    
+    # Check operation status
+    python3 manage-store.py operation fileSearchStores/abc123/operations/op123
     
     # Search without generation (faster)
     python3 manage-store.py search fileSearchStores/abc123 "revenue forecast"
@@ -423,7 +632,30 @@ def main():
     
     command = sys.argv[1].lower()
     
-    if command == 'list':
+    if command == 'info':
+        if len(sys.argv) == 3:
+            get_store_info(sys.argv[2])
+        else:
+            print("❌ Error: Missing store name")
+            print("Usage: python3 manage-store.py info <store-name>")
+    
+    elif command == 'import':
+        if len(sys.argv) >= 4:
+            store_name = sys.argv[2]
+            file_ids = sys.argv[3:]
+            import_files(store_name, file_ids)
+        else:
+            print("❌ Error: Missing arguments")
+            print("Usage: python3 manage-store.py import <store-name> <file-id1> [file-id2] ...")
+    
+    elif command == 'operation':
+        if len(sys.argv) == 3:
+            check_operation(sys.argv[2])
+        else:
+            print("❌ Error: Missing operation ID")
+            print("Usage: python3 manage-store.py operation <operation-id>")
+    
+    elif command == 'list':
         if len(sys.argv) == 2:
             list_stores()
         elif len(sys.argv) == 3:
