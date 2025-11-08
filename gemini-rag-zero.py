@@ -32,19 +32,26 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Use default model and questions
+  # Use defaults (samples/ directory, Flash model, default questions)
   python3 gemini-rag-zero.py
   
   # Use Pro model for better reasoning
   python3 gemini-rag-zero.py --model gemini-2.5-pro
   python3 gemini-rag-zero.py -m gemini-2.5-pro
   
+  # Upload specific files
+  python3 gemini-rag-zero.py --files doc1.pdf doc2.pdf doc3.pdf
+  python3 gemini-rag-zero.py -f mydocs/report.pdf
+  
+  # Upload all PDFs from a directory
+  python3 gemini-rag-zero.py --files /path/to/documents/
+  
   # Ask a custom question
   python3 gemini-rag-zero.py --query "What are the main conclusions?"
   python3 gemini-rag-zero.py -q "Explain the key findings"
   
-  # Combine model and query options
-  python3 gemini-rag-zero.py -m gemini-2.5-pro -q "Summarize in detail"
+  # Combine all options
+  python3 gemini-rag-zero.py -m gemini-2.5-pro -f mydocs/ -q "Summarize"
         """
     )
     parser.add_argument(
@@ -57,6 +64,12 @@ Examples:
         '-q', '--query',
         type=str,
         help='Ask a specific question instead of default questions'
+    )
+    parser.add_argument(
+        '-f', '--files',
+        type=str,
+        nargs='+',
+        help='PDF files or directory to upload (default: samples/*.pdf)'
     )
     args = parser.parse_args()
     
@@ -98,9 +111,7 @@ Examples:
     
     print(f"   Store created: {file_search_store.name}")
 
-    print("\n📂 Uploading sample documents...")
-    print("   Note: This demo expects PDF files in the 'samples/' directory.")
-    print("   Add your own PDFs there, or modify the file paths below.")
+    print("\n📂 Uploading documents...")
     
     # FILE SIZE LIMITS:
     # - Maximum: 100 MB per document
@@ -108,12 +119,31 @@ Examples:
     # - Recommended store size: Under 20 GB for optimal retrieval speed
     # - Indexing cost: $0.15 per 1M tokens (one-time at upload)
     
-    # Upload files from the samples directory
-    sample_files = [
-        "samples/sample1.pdf",
-        "samples/sample2.pdf",
-        "samples/sample3.pdf",
-    ]
+    # Determine which files to upload
+    if args.files:
+        # Use custom files/directory
+        sample_files = []
+        for path in args.files:
+            if os.path.isdir(path):
+                # It's a directory - get all PDF files
+                import glob
+                pdf_files = glob.glob(os.path.join(path, "*.pdf"))
+                sample_files.extend(pdf_files)
+                print(f"   Found {len(pdf_files)} PDF file(s) in directory: {path}")
+            elif os.path.isfile(path):
+                # It's a file
+                sample_files.append(path)
+            else:
+                print(f"   ⚠️  Path not found: {path}")
+    else:
+        # Use default samples directory
+        print("   Note: Using default 'samples/' directory.")
+        print("   Use -f/--files to specify custom files or directory.")
+        sample_files = [
+            "samples/sample1.pdf",
+            "samples/sample2.pdf",
+            "samples/sample3.pdf",
+        ]
     
     uploaded_count = 0
     for file_path in sample_files:
