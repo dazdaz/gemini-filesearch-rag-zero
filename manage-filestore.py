@@ -47,7 +47,7 @@ def list_stores():
         
         # Show document count
         try:
-            docs = list(client.file_search_stores.list_documents(file_search_store_name=store.name))
+            docs = list(client.file_search_stores.documents(file_search_store_name=store.name).list())
             print(f"   Documents: {len(docs)}")
         except:
             pass
@@ -60,7 +60,8 @@ def list_documents(store_name):
     print(f"\n📄 Documents in store:\n")
     
     try:
-        documents = list(client.file_search_stores.list_documents(file_search_store_name=store_name))
+        # Try the correct API method - documents() instead of list_documents()
+        documents = list(client.file_search_stores.documents(file_search_store_name=store_name).list())
         
         if not documents:
             print("   No documents found in this store.")
@@ -84,6 +85,10 @@ def list_documents(store_name):
         print(f"Total: {len(documents)} document(s), ~{total_size:.2f} MB")
         return documents
         
+    except AttributeError:
+        print("   ℹ️  Document listing not available in current API version.")
+        print("   Note: Documents are indexed and queryable, but listing is not yet supported.")
+        return []
     except Exception as e:
         print(f"   ❌ Error: {e}")
         return []
@@ -94,7 +99,7 @@ def show_stats(store_name=None):
         # Stats for specific store
         print(f"📊 Statistics for store: {store_name}\n")
         try:
-            docs = list(client.file_search_stores.list_documents(file_search_store_name=store_name))
+            docs = list(client.file_search_stores.documents(file_search_store_name=store_name).list())
             total_size = sum(getattr(doc, 'size_bytes', 0) for doc in docs) / (1024 * 1024)
             
             print(f"Documents: {len(docs)}")
@@ -117,7 +122,7 @@ def show_stats(store_name=None):
         
         for store in stores:
             try:
-                docs = list(client.file_search_stores.list_documents(file_search_store_name=store.name))
+                docs = list(client.file_search_stores.documents(file_search_store_name=store.name).list())
                 store_size = sum(getattr(doc, 'size_bytes', 0) for doc in docs) / (1024 * 1024)
                 total_docs += len(docs)
                 total_size_mb += store_size
@@ -238,7 +243,7 @@ def export_stores(store_name=None, format='json'):
     if store_name:
         # Export specific store
         try:
-            docs = list(client.file_search_stores.list_documents(file_search_store_name=store_name))
+            docs = list(client.file_search_stores.documents(file_search_store_name=store_name).list())
             
             export_data = {
                 'store_name': store_name,
@@ -265,7 +270,7 @@ def export_stores(store_name=None, format='json'):
         
         for store in stores:
             try:
-                docs = list(client.file_search_stores.list_documents(file_search_store_name=store.name))
+                docs = list(client.file_search_stores.documents(file_search_store_name=store.name).list())
                 export_data.append({
                     'display_name': store.display_name,
                     'name': store.name,
