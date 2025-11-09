@@ -309,7 +309,6 @@ The following Gemini models support File Search:
 
 **File Size Limits:**
 - Maximum file size: **100 MB per document**
-- Recommended file search store size: **Under 20 GB** (for optimal retrieval speed)
 
 **Storage Limits:**
 - **Free tier**: Up to **1 GB** free (includes input data + embeddings, typically ~3x your input size)
