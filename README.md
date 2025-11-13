@@ -15,11 +15,19 @@ This repository contains **two complete implementations** showing how to use Goo
 ### 📊 Demo 1: Python CLI ([`demo1-python/`](demo1-python/))
 **Command-line interface with full store management**
 
+**Main Demo Script (`gemini-rag-zero.py`):**
+- ✅ Upload multiple PDFs/documents to Gemini File Search
+- ✅ Interactive Q&A with your uploaded documents
+- ✅ Get AI answers grounded in your actual data
+- ✅ Automatic citations and source references
+- ✅ Support for batch document processing
+
+**Store Management Utility (`manage-filestore.py`):**
 - ✅ Create and manage persistent File Search Stores
-- ✅ Upload multiple PDFs with metadata
-- ✅ Ask questions via CLI with grounded answers
-- ✅ Comprehensive store management utility (13 commands)
-- ✅ Interactive and batch modes
+- ✅ List, delete, and organize uploaded files
+- ✅ Comprehensive store management (13 commands)
+- ✅ Monitor storage usage and file metadata
+- ✅ Interactive and batch command modes
 
 **Perfect for:** Scripts, automation, data processing pipelines
 
@@ -27,7 +35,10 @@ This repository contains **two complete implementations** showing how to use Goo
 ```bash
 cd demo1-python
 pip install -r requirements.txt
+# Run the main RAG demo:
 python3 gemini-rag-zero.py
+# Or manage file stores:
+python3 manage-filestore.py
 ```
 
 [👉 See full Python demo documentation](demo1-python/README.md)
@@ -91,13 +102,13 @@ Both demos require:
 ```
 gemini-filesearch-rag-zero/
 ├── demo1-python/           # Python CLI demo
-│   ├── gemini-rag-zero.py      # Main demo script
-│   ├── manage-filestore.py     # Store management utility
+│   ├── gemini-rag-zero.py      # Main RAG demo - upload & query documents
+│   ├── manage-filestore.py     # Store management utility (13 commands)
 │   ├── requirements.txt        # Python dependencies
 │   └── README.md              # Python demo docs
 │
 ├── demo2-js/               # JavaScript Web UI demo
-│   ├── server.js              # Express backend
+│   ├── server.js              # Express backend with document conversion
 │   ├── package.json           # Node.js dependencies
 │   ├── public/                # Frontend files
 │   │   ├── index.html
