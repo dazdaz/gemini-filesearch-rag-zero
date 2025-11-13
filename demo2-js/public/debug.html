@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Debug Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 2px solid #333; }
+        button { padding: 10px; margin: 5px; }
+        #log { background: #f0f0f0; padding: 10px; height: 300px; overflow-y: auto; }
+        .log-entry { margin: 2px 0; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Upload Debug Test</h1>
+    
+    <div class="section">
+        <h2>Step 1: Select File</h2>
+        <input type="file" id="fileInput" accept=".pdf">
+        <div id="fileStatus">No file selected</div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 2: Upload</h2>
+        <button id="uploadBtn" disabled>Upload File</button>
+    </div>
+    
+    <div class="section">
+        <h2>Debug Log:</h2>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileStatus = document.getElementById('fileStatus');
+        const logDiv = document.getElementById('log');
+        let selectedFile = null;
+        
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="log-entry">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        log('✅ Page loaded');
+        
+        // File selection
+        fileInput.addEventListener('change', (e) => {
+            log('📂 File input changed');
+            
+            if (e.target.files && e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                log(`✅ File selected: ${selectedFile.name} (${selectedFile.size} bytes, ${selectedFile.type})`);
+                fileStatus.textContent = `Selected: ${selectedFile.name}`;
+                uploadBtn.disabled = false;
+                log('✅ Upload button enabled');
+            } else {
+                log('❌ No file selected');
+                selectedFile = null;
+                fileStatus.textContent = 'No file selected';
+                uploadBtn.disabled = true;
+            }
+        });
+        
+        // Upload button
+        uploadBtn.addEventListener('click', async () => {
+            log('🚀 Upload button clicked!');
+            
+            if (!selectedFile) {
+                log('❌ No file to upload');
+                return;
+            }
+            
+            log(`📤 Creating FormData with file: ${selectedFile.name}`);
+            const formData = new FormData();
+            formData.append('files', selectedFile);
+            
+            // Log FormData contents
+            for (let [key, value] of formData) {
+                log(`   FormData: ${key} = ${value.name || value}`);
+            }
+            
+            try {
+                log('🌐 Sending POST request to /api/store/upload...');
+                uploadBtn.textContent = 'Uploading...';
+                uploadBtn.disabled = true;
+                
+                const response = await fetch('/api/store/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`📥 Response received: Status ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`📦 Response data: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    log('✅ Upload successful!');
+                    alert('Upload successful! Check the logs.');
+                } else {
+                    log(`❌ Upload failed: ${data.error}`);
+                    alert(`Upload failed: ${data.error}`);
+                }
+            } catch (error) {
+                log(`❌ Error during upload: ${error.message}`);
+                log(`   Stack: ${error.stack}`);
+                alert(`Error: ${error.message}`);
+            } finally {
+                uploadBtn.textContent = 'Upload File';
+                uploadBtn.disabled = false;
+            }
+        });
+        
+        log('✅ Event listeners attached');
+        
+        // Test that JavaScript is working
+        log('✅ JavaScript is executing properly');
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Upload Test</title>
+</head>
+<body>
+    <h1>Simple Upload Test</h1>
+    <input type="file" id="file" accept=".pdf">
+    <button id="uploadBtn">Upload</button>
+    <div id="result"></div>
+
+    <script>
+        console.log('✅ JavaScript is loading!');
+        
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+            console.log('🚀 Button clicked!');
+            
+            const fileInput = document.getElementById('file');
+            const result = document.getElementById('result');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                console.log('❌ No file selected');
+                result.textContent = 'No file selected';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            console.log('📄 File:', file.name, file.size, 'bytes');
+            
+            const formData = new FormData();
+            formData.append('files', file);
+            
+            try {
+                console.log('📤 Uploading to /api/store/upload...');
+                result.textContent = 'Uploading...';
+                
+                const response = await fetch('/api/store/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('📥 Response status:', response.status);
+                const data = await response.json();
+                console.log('📦 Response data:', data);
+                
+                result.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('❌ Error:', error);
+                result.textContent = 'Error: ' + error.message;
+            }
+        });
+        
+        console.log('✅ Event listener attached');
+    </script>
+</body>
+</html>

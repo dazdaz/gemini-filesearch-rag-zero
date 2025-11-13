@@ -26,8 +26,26 @@ env/
 ENV/
 .venv
 
-# Environment variables
+# Environment variables (ignore in root and all subdirectories)
 .env
+**/.env
+*.env
+.env.*
+**/.env.*
+
+# Node.js
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+*.tsbuildinfo
+
+# Uploads and temporary files
+uploads/
+**/uploads/
+*.log
 
 # IDE
 .vscode/

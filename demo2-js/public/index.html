@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini File Search RAG Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Gemini File Search RAG Demo</h1>
+            <p class="subtitle">Upload PDFs and ask questions about their content</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Upload Section -->
+            <section class="card upload-section">
+                <h2>📤 Upload Documents</h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt" hidden>
+                    <div class="upload-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p>Click to upload or drag & drop</p>
+                        <p class="upload-hint">PDF, DOC, DOCX, TXT (max 100MB per file)</p>
+                    </div>
+                </div>
+                <button id="uploadBtn" class="btn btn-primary" disabled>
+                    <span class="btn-icon">📤</span> Upload Files
+                </button>
+            </section>
+
+            <!-- Files List Section -->
+            <section class="card files-section">
+                <div class="section-header">
+                    <h2>📁 Uploaded Documents</h2>
+                    <button id="clearBtn" class="btn btn-secondary" style="display: none;">
+                        <span class="btn-icon">🗑️</span> Clear All
+                    </button>
+                </div>
+                <div id="filesList" class="files-list">
+                    <div class="empty-state">
+                        <p>No documents uploaded yet</p>
+                    </div>
+                </div>
+                <div id="storeInfo" class="store-info" style="display: none;"></div>
+            </section>
+
+            <!-- Query Section -->
+            <section class="card query-section">
+                <h2>💬 Ask Questions</h2>
+                <div class="query-examples">
+                    <p class="query-label">Try these examples:</p>
+                    <div class="example-queries">
+                        <button class="example-query" data-query="Summarize the main topics covered in the documents">
+                            Summarize the main topics
+                        </button>
+                        <button class="example-query" data-query="What are the key findings or recommendations?">
+                            Key findings
+                        </button>
+                        <button class="example-query" data-query="List any important dates or deadlines mentioned">
+                            Important dates
+                        </button>
+                    </div>
+                </div>
+                <form id="queryForm">
+                    <div class="query-input-group">
+                        <textarea 
+                            id="questionInput" 
+                            placeholder="Ask anything about your uploaded documents..." 
+                            rows="3"
+                            disabled
+                        ></textarea>
+                        <button type="submit" class="btn btn-primary" id="queryBtn" disabled>
+                            <span class="btn-icon">🔍</span> Ask
+                        </button>
+                    </div>
+                </form>
+                <div id="answerSection" class="answer-section" style="display: none;">
+                    <h3>Answer</h3>
+                    <div id="answerContent" class="answer-content"></div>
+                    <div id="sourcesSection" class="sources-section" style="display: none;">
+                        <h4>📌 Sources</h4>
+                        <ul id="sourcesList"></ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p id="loadingText">Processing...</p>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toastContainer" class="toast-container"></div>
+
+        <footer>
+            <p>
+                Built with 
+                <a href="https://ai.google.dev/gemini-api/docs/file-search" target="_blank">Gemini File Search API</a>
+                | 
+                <a href="https://github.com/yourusername/gemini-filesearch-demo" target="_blank">View on GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="app-fixed.js"></script>
+</body>
+</html>

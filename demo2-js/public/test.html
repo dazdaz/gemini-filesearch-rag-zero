@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Diagnostic Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-left: 4px solid #0f0;
+        }
+        .error {
+            border-left-color: #f00;
+            color: #f00;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: monospace;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0a0;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Gemini File Search API Diagnostic</h1>
+    
+    <div class="test">
+        <h2>Test 1: Server Health</h2>
+        <button onclick="testHealth()">Run Test</button>
+        <pre id="health-result">Not tested yet</pre>
+    </div>
+
+    <div class="test">
+        <h2>Test 2: List Files</h2>
+        <button onclick="testListFiles()">Run Test</button>
+        <pre id="files-result">Not tested yet</pre>
+    </div>
+
+    <div class="test">
+        <h2>Test 3: Upload File</h2>
+        <input type="file" id="testFile" accept=".pdf,.txt,.doc,.docx">
+        <button onclick="testUpload()">Upload File</button>
+        <pre id="upload-result">No file selected</pre>
+    </div>
+
+    <div class="test">
+        <h2>Test 4: List Files (After Upload)</h2>
+        <button onclick="testListFilesAfterUpload()">Run Test</button>
+        <pre id="files-after-result">Not tested yet</pre>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function testHealth() {
+            const result = document.getElementById('health-result');
+            try {
+                result.textContent = 'Testing...';
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                result.textContent = `✅ SUCCESS\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.textContent = `❌ ERROR\n${error.message}`;
+                result.parentElement.classList.add('error');
+            }
+        }
+
+        async function testListFiles() {
+            const result = document.getElementById('files-result');
+            try {
+                result.textContent = 'Testing...';
+                const response = await fetch(`${API_BASE}/api/store/files`);
+                const data = await response.json();
+                result.textContent = `✅ SUCCESS\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.textContent = `❌ ERROR\n${error.message}`;
+                result.parentElement.classList.add('error');
+            }
+        }
+
+        async function testUpload() {
+            const result = document.getElementById('upload-result');
+            const fileInput = document.getElementById('testFile');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                result.textContent = '❌ No file selected';
+                return;
+            }
+
+            try {
+                result.textContent = 'Uploading...';
+                const formData = new FormData();
+                formData.append('files', fileInput.files[0]);
+
+                const response = await fetch(`${API_BASE}/api/store/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                result.textContent = `✅ UPLOAD RESULT\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                result.textContent = `❌ ERROR\n${error.message}`;
+                result.parentElement.classList.add('error');
+            }
+        }
+
+        async function testListFilesAfterUpload() {
+            const result = document.getElementById('files-after-result');
+            try {
+                result.textContent = 'Testing...';
+                const response = await fetch(`${API_BASE}/api/store/files`);
+                const data = await response.json();
+                
+                if (data.success && data.files && data.files.length > 0) {
+                    result.textContent = `✅ SUCCESS - Found ${data.files.length} file(s)\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    result.textContent = `⚠️  NO FILES FOUND\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                result.textContent = `❌ ERROR\n${error.message}`;
+                result.parentElement.classList.add('error');
+            }
+        }
+
+        // Auto-run health check on load
+        window.addEventListener('DOMContentLoaded', testHealth);
+    </script>
+</body>
+</html>

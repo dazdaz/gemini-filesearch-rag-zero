@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Isolated Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 2px solid #007bff; }
+        button { 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            background: #007bff; 
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed; 
+        }
+        #log { 
+            background: #f0f0f0; 
+            padding: 10px; 
+            min-height: 300px; 
+            font-family: monospace; 
+            white-space: pre-wrap; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🔬 Isolated Upload Test</h1>
+    <p>This test isolates the upload functionality completely from any other code.</p>
+    
+    <div class="section">
+        <h2>Step 1: File Selection</h2>
+        <input type="file" id="fileInput" accept=".pdf" />
+        <div id="fileInfo">No file selected</div>
+    </div>
+    
+    <div class="section">
+        <h2>Step 2: Upload Methods</h2>
+        
+        <h3>Method A: Button with type="button"</h3>
+        <button type="button" id="uploadBtn1" disabled>Upload (type=button)</button>
+        
+        <h3>Method B: Button without type</h3>
+        <button id="uploadBtn2" disabled>Upload (no type)</button>
+        
+        <h3>Method C: Link styled as button</h3>
+        <a href="#" id="uploadBtn3" style="display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 4px; opacity: 0.5; pointer-events: none;">Upload (link)</a>
+        
+        <h3>Method D: Div styled as button</h3>
+        <div id="uploadBtn4" style="display: inline-block; padding: 10px 20px; background: #dc3545; color: white; cursor: not-allowed; border-radius: 4px; opacity: 0.5;">Upload (div)</div>
+    </div>
+    
+    <div class="section">
+        <h2>Debug Log:</h2>
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        // No external scripts, no frameworks, just pure vanilla JS
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const logDiv = document.getElementById('log');
+        let selectedFile = null;
+        
+        function log(msg) {
+            const time = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${time}] ${msg}\n`;
+            console.log(msg);
+        }
+        
+        log('=== Page loaded ===');
+        
+        // File selection
+        fileInput.addEventListener('change', function(e) {
+            log('File input changed');
+            
+            if (e.target.files && e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                fileInfo.textContent = `Selected: ${selectedFile.name} (${selectedFile.size} bytes)`;
+                log(`File selected: ${selectedFile.name}`);
+                
+                // Enable all upload buttons
+                document.getElementById('uploadBtn1').disabled = false;
+                document.getElementById('uploadBtn2').disabled = false;
+                document.getElementById('uploadBtn3').style.opacity = '1';
+                document.getElementById('uploadBtn3').style.pointerEvents = 'auto';
+                document.getElementById('uploadBtn4').style.opacity = '1';
+                document.getElementById('uploadBtn4').style.cursor = 'pointer';
+                
+                log('All upload buttons enabled');
+            } else {
+                selectedFile = null;
+                fileInfo.textContent = 'No file selected';
+                log('File selection cleared');
+            }
+        });
+        
+        // Upload function
+        async function doUpload(buttonName) {
+            log(`\n=== Upload triggered by: ${buttonName} ===`);
+            
+            if (!selectedFile) {
+                log('ERROR: No file to upload');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('files', selectedFile);
+            
+            log(`Creating request for: ${selectedFile.name}`);
+            log(`URL: ${window.location.origin}/api/store/upload`);
+            
+            try {
+                log('Sending POST request...');
+                
+                const response = await fetch('/api/store/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`Response status: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`Response data: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    log(`✅ SUCCESS: Upload complete via ${buttonName}`);
+                    alert(`Success! File uploaded using ${buttonName}`);
+                } else {
+                    log(`❌ FAILED: ${data.error}`);
+                    alert(`Failed: ${data.error}`);
+                }
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`);
+                log(`Stack: ${error.stack}`);
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        // Method A: Button with type="button"
+        document.getElementById('uploadBtn1').addEventListener('click', function(e) {
+            log('Button A clicked (type=button)');
+            e.preventDefault();
+            doUpload('Button A (type=button)');
+        });
+        
+        // Method B: Button without type
+        document.getElementById('uploadBtn2').addEventListener('click', function(e) {
+            log('Button B clicked (no type)');
+            e.preventDefault();
+            doUpload('Button B (no type)');
+        });
+        
+        // Method C: Link
+        document.getElementById('uploadBtn3').addEventListener('click', function(e) {
+            log('Link C clicked');
+            e.preventDefault();
+            doUpload('Link C');
+        });
+        
+        // Method D: Div
+        document.getElementById('uploadBtn4').addEventListener('click', function(e) {
+            log('Div D clicked');
+            doUpload('Div D');
+        });
+        
+        log('Event listeners attached');
+        log('Ready for testing');
+    </script>
+</body>
+</html>
