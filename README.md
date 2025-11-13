@@ -191,6 +191,7 @@ Traditional AI models only know what they learned during training. With RAG, you
 
 ## Learn More
 
+- 💡 [**Use Cases & Examples**](USE_CASES.md) – Comprehensive guide to real-world applications
 - 📝 [Phil's JavaScript Tutorial](https://www.philschmid.de/gemini-file-search-javascript) – Comprehensive hands-on guide
 - 📢 [Google's Official Announcement](https://blog.google/technology/developers/file-search-gemini-api/)
 - 📚 [Official Documentation](https://ai.google.dev/gemini-api/docs/file-search)
@@ -204,6 +205,8 @@ Google's File Search competes directly with OpenAI's Assistants API file search,
 - Production-ready for enterprise use
 
 Perfect for building AI assistants that need to answer questions about your documents, contracts, reports, knowledge bases, etc.
+
+**📋 [See Real-World Use Cases](USE_CASES.md)** - Discover how organizations are using Gemini File Search across industries including healthcare, finance, legal, education, and more.
 
 ## 🤝 Contributing
 
